@@ -167,23 +167,20 @@ function sendAudioToCaller(state, pcmBuffer) {
  * On speech_end, silence timeout, or Sarvam close fallback: send transcript to LLM, TTS, play to caller.
  */
 async function handleUserUtterance(state, transcript) {
-    console.log("   [Pipeline Step 0] handleUserUtterance called, transcript length:", transcript?.length ?? 0);
     if (state.stopped || !transcript?.trim()) {
         console.log("   [Pipeline Step 0] SKIP - stopped:", state.stopped, "empty:", !transcript?.trim());
         return;
     }
 
     const userMessage = transcript.trim();
-    console.log("   [Pipeline Step 1] User message:", userMessage);
 
     state.conversationHistory.push({ role: "user", content: userMessage });
-    console.log("   [Pipeline Step 2] Added to history, count:", state.conversationHistory.length);
 
     const abortSignal = state.abortController?.signal;
     let fullResponse = "";
     const ttsSegments = [];
     try {
-        console.log("   [Pipeline Step 3] Calling Bedrock LLM (generateResponseStream)...");
+        console.log("   [Pipeline Step 2] Calling Bedrock LLM (generateResponseStream)...");
         let buffer = "";
         for await (const chunk of generateResponseStream(userMessage, state.conversationHistory, abortSignal)) {
             if (state.stopped) break;
@@ -205,14 +202,14 @@ async function handleUserUtterance(state, transcript) {
             }
         }
         if (state.stopped) {
-            console.log("   [Pipeline Step 3] ABORTED - call ended during LLM");
+            console.log("   [Pipeline error] ABORTED - call ended during LLM");
             state.conversationHistory.pop();
             return;
         }
         const remainder = buffer.trim();
         if (remainder && remainder.split(/\s+/).filter(Boolean).length >= TTS_MIN_WORDS) ttsSegments.push(remainder);
         if (ttsSegments.length === 0 && fullResponse.trim()) ttsSegments.push(fullResponse.trim());
-        console.log("   [Pipeline Step 3] LLM done, response length:", fullResponse.length, "| TTS chunks:", ttsSegments.length);
+        
     } catch (err) {
         if (err?.name === "AbortError") {
             console.log("   [Pipeline Step 3] ABORTED");
@@ -307,10 +304,6 @@ async function connectSarvamStreaming(state) {
         socket.on("message", (data) => {
             const msg = typeof data === "string" ? JSON.parse(data) : data;
             const type = msg?.type;
-            // Debug: log every message type to see what Sarvam sends
-            if (type && !["transcript", "final_transcript"].includes(type)) {
-                console.log("   [Sarvam msg] type:", type, "keys:", Object.keys(msg || {}).join(", "));
-            }
             if (type === "error") {
                 state.sarvamHadError = true;
                 console.error("   [Sarvam error]:", msg?.data?.message ?? msg);

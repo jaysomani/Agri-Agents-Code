@@ -76,13 +76,9 @@ async function* generateResponseStream(userMessage, conversationHistory = [], ab
     for await (const event of response.stream) {
         if (event.contentBlockDelta?.delta?.text) {
             chunkCount++;
-            if (chunkCount <= 3) {
-                console.log("   [LLM] streaming chunk", chunkCount, ":", event.contentBlockDelta.delta.text.substring(0, 30) + "...");
-            }
             yield event.contentBlockDelta.delta.text;
         }
     }
-    console.log("   [LLM] stream complete, total chunks:", chunkCount);
 }
 
 module.exports = {
