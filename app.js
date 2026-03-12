@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 const server = http.createServer(app);
 setupVoiceWebSocket(server, { wsPath: "/voice/stream" });
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Local URL: http://localhost:${PORT}`);
     console.log(`Voice webhook: http://localhost:${PORT}/voice/incoming`);

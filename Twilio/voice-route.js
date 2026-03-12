@@ -34,21 +34,8 @@ twilioRouter.post("/incoming", (req, res) => {
     console.log("   Media Stream URL:", wssUrl);
 
     const twiml = new VoiceResponse();
-    const start = twiml.start();
-    start.stream({
-        url: wssUrl,
-        track: "inbound_track",
-    });
-
-    twiml.say(
-        { voice: "alice", language: "en-IN" },
-        "Welcome to Agri Agents. Please tell me your question now.",
-    );
-
-    // TODO: Replace the paused logic with conversation logic
-    twiml.pause({ length: 45 });
-    twiml.say({ voice: "alice" }, "Thank you for calling. Goodbye.");
-    twiml.hangup();
+    const connect = twiml.connect();
+    connect.stream({ url: wssUrl });
 
     res.type("text/xml");
     res.send(twiml.toString());

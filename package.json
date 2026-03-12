@@ -1,10 +1,12 @@
 {
     "scripts": {
         "dev": "node app.js",
-        "voice": "node app.js",
+        "start": "node app.js",
         "test:voice": "node test-voice-webhooks.js"
     },
     "dependencies": {
+        "@aws-sdk/client-bedrock-runtime": "^3.998.0",
+        "@smithy/node-http-handler": "^4.4.12",
         "alawmulaw": "^6.0.0",
         "dotenv": "^17.3.1",
         "express": "^5.2.1",

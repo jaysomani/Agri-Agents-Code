@@ -100,8 +100,24 @@ function pcmToWavBuffer(pcmBuffer) {
     return buffer;
 }
 
+/**
+ * Convert raw PCM (16-bit LE, 8kHz mono) to μ-law for Twilio playback.
+ * @param {Buffer} pcmBuffer - 16-bit signed little-endian PCM
+ * @returns {Buffer} μ-law encoded buffer
+ */
+function pcmToMulawBuffer(pcmBuffer) {
+    const numSamples = pcmBuffer.length / 2;
+    const samples = new Int16Array(numSamples);
+    for (let i = 0; i < numSamples; i++) {
+        samples[i] = pcmBuffer.readInt16LE(i * 2);
+    }
+    const mulawArray = alawmulaw.mulaw.encode(samples);
+    return Buffer.from(mulawArray);
+}
+
 module.exports = {
     mulawToWav,
     mulawToPcmBuffer,
     pcmToWavBuffer,
+    pcmToMulawBuffer,
 };
